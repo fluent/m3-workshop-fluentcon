@@ -1,0 +1,139 @@
+version: "3.5"
+services:
+  m3db_seed:
+    networks:
+      - backend
+    image: quay.io/m3db/m3dbnode:latest
+    volumes:
+      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
+      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
+    environment:
+      - M3DB_HOST_ID=m3db_seed
+    expose:
+      - "2379"
+      - "9002"
+      - "9003"
+      - "9004"
+    ports:
+      - "0.0.0.0:2379:2379"
+      - "0.0.0.0:9002:9002"
+      - "0.0.0.0:9003:9003"
+      - "0.0.0.0:9004:9004"
+    privileged: true
+    cap_add:
+      - ALL
+  m3db_data01:
+    networks:
+      - backend
+    image: quay.io/m3db/m3dbnode:latest
+    volumes:
+      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
+      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
+    environment:
+      - M3DB_HOST_ID=m3db_data01
+    privileged: true
+    cap_add:
+        - ALL
+    depends_on: 
+      - "m3db_seed"
+  m3db_data02:
+    networks:
+      - backend
+    image: quay.io/m3db/m3dbnode:latest
+    volumes:
+      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
+      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
+    environment:
+      - M3DB_HOST_ID=m3db_data02
+    privileged: true
+    cap_add:
+      - ALL
+    depends_on: 
+      - "m3db_seed"
+  prometheus01:
+    expose:
+      - "9090"
+    ports:
+      - "0.0.0.0:9090:9090"
+    networks:
+      - backend
+    image: prom/prometheus:latest
+    volumes:
+      - "./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    depends_on:
+      - "m3query01"
+  prometheus02:
+    expose:
+      - "9091"
+    ports:
+      - "0.0.0.0:9091:9090"
+    networks:
+      - backend
+    image: prom/prometheus:latest
+    volumes:
+      - "./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    depends_on:
+      - "m3query01"
+  m3coordinator01:
+    expose:
+      - "7201"
+      - "7203"
+      - "7204"
+      - "7507"
+    ports:
+      - "0.0.0.0:7201:7201"
+      - "0.0.0.0:7203:7203"
+      - "0.0.0.0:7204:7204"
+      - "0.0.0.0:7507:7507"
+    networks:
+      - backend
+    image: quay.io/m3db/m3coordinator:latest
+    volumes:
+      - "./config/m3/m3coordinator.yml:/etc/m3coordinator/m3coordinator.yml"
+      - "./config/m3/schema.proto:/etc/m3coordinator/schema.proto"
+    depends_on:
+      - "m3db_seed"
+  provisioner:
+    environment:
+      - USE_MULTI_DB_NODES
+      - USE_MULTI_PROMETHEUS_NODES
+    networks:
+      - backend
+    image: dwdraju/alpine-curl-jq:latest
+    depends_on:
+      - "m3coordinator01"
+    volumes:
+      - "./bin/provision.sh:/tmp/provision.sh"
+    entrypoint: /tmp/provision.sh
+  m3query01:
+    expose:
+      - "7201"
+      - "7203"
+      - "7204"
+      - "7507"
+    ports:
+      - "0.0.0.0:7221:7201"
+      - "0.0.0.0:7223:7203"
+      - "0.0.0.0:7224:7204"
+      - "0.0.0.0:7527:7507"
+    networks:
+      - backend
+    image: quay.io/m3db/m3query:latest
+    volumes:
+      - "./config/m3/m3query.yml:/etc/m3query/m3query.yml"
+    depends_on:
+      - "provisioner"
+  grafana:
+    expose:
+      - "3000"
+    ports:
+      - "0.0.0.0:3000:3000"
+    networks:
+      - backend
+    image: grafana/grafana:latest
+    volumes:
+      - "./config/grafana/provisioning/:/etc/grafana/provisioning/"
+    depends_on:
+      - "m3query01"
+networks:
+  backend:
