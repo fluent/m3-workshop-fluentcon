@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
-set -e
+set -o errexit
+set -o pipefail
+
+
+# Variables
+COORDINATOR_API_HOST=${COORDINATOR_API_HOST:-"m3coordinator01:7201"}
+M3DB_SEED_HOST=${M3DB_SEED_HOST:-"m3db_seed:9002"}
+
+
+
 
 # Retries a command a configurable number of times with backoff.
 #
@@ -49,101 +58,108 @@ function retry_with_backoff {
   return $exitCode
 }
 
-# Variables
-COORDINATOR_API_HOST=${COORDINATOR_API_HOST:-"m3coordinator01:7201"}
-M3DB_SEED_HOST=${M3DB_SEED_HOST:-"m3db_seed:9002"}
+function provision_namespaces {
+  # Check if the namespace already exists and skip the provisioning step
+  set +e
+  curl -sSf ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace | jq --exit-status '.registry.namespaces.default'
+  [[ $? -eq 0 ]] && return 0
+  set -e
 
+  echo "Initializing namespaces"
+  curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace -d '{
+    "name": "default",
+    "options": {
+      "bootstrapEnabled": true,
+      "flushEnabled": true,
+      "writesToCommitLog": true,
+      "cleanupEnabled": true,
+      "snapshotEnabled": true,
+      "repairEnabled": false,
+      "retentionOptions": {
+        "retentionPeriodDuration": "48h",
+        "blockSizeDuration": "2h",
+        "bufferFutureDuration": "10m",
+        "bufferPastDuration": "10m",
+        "blockDataExpiry": true,
+        "blockDataExpiryAfterNotAccessPeriodDuration": "5m"
+      },
+      "indexOptions": {
+        "enabled": true,
+        "blockSizeDuration": "2h"
+      }
+    }
+  }'
+  echo "Done initializing namespaces"
+
+  echo "Validating namespace"
+  [ "$(curl -sSf -X GET ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace | jq .registry.namespaces.default.indexOptions.enabled)" == true ]
+  echo "Done validating namespace"
+
+  echo "Waiting for namespaces to be ready"
+  [ $(curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace/ready -d "{ \"name\": \"default\", \"force\": true }" | grep -c true) -eq 1 ]
+  echo "Done waiting for namespaces to be ready"
+
+  echo "Initializing topology"
+  if [[ "$USE_MULTI_DB_NODES" = true ]] ; then
+      curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/placement/init -d '{
+          "num_shards": 64,
+          "replication_factor": 3,
+          "instances": [
+              {
+                  "id": "m3db_seed",
+                  "isolation_group": "rack-a",
+                  "zone": "embedded",
+                  "weight": 1024,
+                  "endpoint": "m3db_seed:9000",
+                  "hostname": "m3db_seed",
+                  "port": 9000
+              },
+              {
+                  "id": "m3db_data01",
+                  "isolation_group": "rack-b",
+                  "zone": "embedded",
+                  "weight": 1024,
+                  "endpoint": "m3db_data01:9000",
+                  "hostname": "m3db_data01",
+                  "port": 9000
+              },
+              {
+                  "id": "m3db_data02",
+                  "isolation_group": "rack-c",
+                  "zone": "embedded",
+                  "weight": 1024,
+                  "endpoint": "m3db_data02:9000",
+                  "hostname": "m3db_data02",
+                  "port": 9000
+              }
+          ]
+      }'
+  else
+      curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/placement/init -d '{
+          "num_shards": 64,
+          "replication_factor": 1,
+          "instances": [
+              {
+                  "id": "m3db_seed",
+                  "isolation_group": "rack-a",
+                  "zone": "embedded",
+                  "weight": 1024,
+                  "endpoint": "m3db_seed:9000",
+                  "hostname": "m3db_seed",
+                  "port": 9000
+              }
+          ]
+      }'
+  fi
+
+  return 0
+}
 
 # M3 cluster provisioning sequence
 ATTEMPTS=50 MAX_TIMEOUT=4 TIMEOUT=1 retry_with_backoff \
   'curl -sSf ${COORDINATOR_API_HOST}/health'
 
-echo "Initializing namespaces"
-curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace -d '{
-  "name": "default",
-  "options": {
-    "bootstrapEnabled": true,
-    "flushEnabled": true,
-    "writesToCommitLog": true,
-    "cleanupEnabled": true,
-    "snapshotEnabled": true,
-    "repairEnabled": false,
-    "retentionOptions": {
-      "retentionPeriodDuration": "48h",
-      "blockSizeDuration": "2h",
-      "bufferFutureDuration": "10m",
-      "bufferPastDuration": "10m",
-      "blockDataExpiry": true,
-      "blockDataExpiryAfterNotAccessPeriodDuration": "5m"
-    },
-    "indexOptions": {
-      "enabled": true,
-      "blockSizeDuration": "2h"
-    }
-  }
-}'
-echo "Done initializing namespaces"
-
-echo "Validating namespace"
-[ "$(curl -sSf ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace | jq .registry.namespaces.default.indexOptions.enabled)" == true ]
-echo "Done validating namespace"
-
-echo "Waiting for namespaces to be ready"
-[ $(curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/namespace/ready -d "{ \"name\": \"default\", \"force\": true }" | grep -c true) -eq 1 ]
-echo "Done waiting for namespaces to be ready"
-
-echo "Initializing topology"
-if [[ "$USE_MULTI_DB_NODES" = true ]] ; then
-    curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/placement/init -d '{
-        "num_shards": 64,
-        "replication_factor": 3,
-        "instances": [
-            {
-                "id": "m3db_seed",
-                "isolation_group": "rack-a",
-                "zone": "embedded",
-                "weight": 1024,
-                "endpoint": "m3db_seed:9000",
-                "hostname": "m3db_seed",
-                "port": 9000
-            },
-            {
-                "id": "m3db_data01",
-                "isolation_group": "rack-b",
-                "zone": "embedded",
-                "weight": 1024,
-                "endpoint": "m3db_data01:9000",
-                "hostname": "m3db_data01",
-                "port": 9000
-            },
-            {
-                "id": "m3db_data02",
-                "isolation_group": "rack-c",
-                "zone": "embedded",
-                "weight": 1024,
-                "endpoint": "m3db_data02:9000",
-                "hostname": "m3db_data02",
-                "port": 9000
-            }
-        ]
-    }'
-else
-    curl -sSf -X POST ${COORDINATOR_API_HOST}/api/v1/services/m3db/placement/init -d '{
-        "num_shards": 64,
-        "replication_factor": 1,
-        "instances": [
-            {
-                "id": "m3db_seed",
-                "isolation_group": "rack-a",
-                "zone": "embedded",
-                "weight": 1024,
-                "endpoint": "m3db_seed:9000",
-                "hostname": "m3db_seed",
-                "port": 9000
-            }
-        ]
-    }'
-fi
+provision_namespaces
 
 echo "Validating topology"
 [ "$(curl -sSf ${COORDINATOR_API_HOST}/api/v1/services/m3db/placement | jq .placement.instances.m3db_seed.id)" == '"m3db_seed"' ]
@@ -162,5 +178,4 @@ echo "Prometheus available at http://localhost:9090"
 if [[ "$USE_MULTI_PROMETHEUS_NODES" = true ]] ; then
     echo "Prometheus replica is available at http://localhost:9091"
 fi
-
 echo "Grafana available at http://localhost:3000"
