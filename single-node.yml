@@ -22,34 +22,6 @@ services:
     privileged: true
     cap_add:
       - ALL
-  m3db_data01:
-    networks:
-      - backend
-    image: quay.io/m3db/m3dbnode:latest
-    volumes:
-      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
-      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
-    environment:
-      - M3DB_HOST_ID=m3db_data01
-    privileged: true
-    cap_add:
-        - ALL
-    depends_on: 
-      - "m3db_seed"
-  m3db_data02:
-    networks:
-      - backend
-    image: quay.io/m3db/m3dbnode:latest
-    volumes:
-      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
-      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
-    environment:
-      - M3DB_HOST_ID=m3db_data02
-    privileged: true
-    cap_add:
-      - ALL
-    depends_on: 
-      - "m3db_seed"
   prometheus01:
     expose:
       - "9090"
@@ -95,7 +67,7 @@ services:
       - "m3db_seed"
   provisioner:
     environment:
-      - USE_MULTI_DB_NODES=true
+      - USE_MULTI_DB_NODES=false
       - USE_MULTI_PROMETHEUS_NODES=true
     networks:
       - backend
