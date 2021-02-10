@@ -15,7 +15,7 @@ Download [Docker Desktop](https://www.docker.com/products/docker-desktop) for Ma
 The stack consists of the latest versions of these components:
 
 - A standalone M3DB node or a cluster of 3 nodes;
-- [M3 Coordinator](https://m3db.io/docs/m3coordinator/) and [M3 Query[https://m3db.io/docs/m3query/] instances to interact w/ [M3DB](https://m3db.io/docs/m3db/);
+- [M3 Coordinator](https://m3db.io/docs/m3coordinator/) and [M3 Query](https://m3db.io/docs/m3query/) instances to interact w/ the [M3DB](https://m3db.io/docs/m3db/) nodes;
 - Two [Prometheus](https://prometheus.io/docs/introduction/overview/) instances;
 - A single [Grafana](https://grafana.com/) instance.
 
@@ -55,13 +55,13 @@ To run the M3 stack consisting of a single M3DB node, run the following command 
 
 ```$:~ docker-compose -f single-node.yml up```
 
-Once the stack is up and running, use `http://localhost:3000` URL to login into the Grafana using `admin:admin` credentials and then head to the [Explore](http://localhost:3000/explore) tab.
+Once the stack is up and running, login into the [Grafana](http://localhost:3030) using `admin:admin` credentials and then head to the [Explore](http://localhost:3000/explore) tab.
 
 ### Sending Prometheus metrics to the M3DB cluster
 
-To start sending metrics scraped by Prometheus instances to the M3DB cluster, we need to enable remote write functionality: 
+To start sending metrics scraped by Prometheus instances to the M3DB cluster, we need to enable remote write functionality:
 
-- Uncomment both `remote_read` and `remote_write` blocks in `./config/prometheus/prometheus01.yml` and `./config/prometheus/prometheus02.yml` config files;
+- Uncomment both `remote_read` and `remote_write` blocks in [./config/prometheus/prometheus01.yml](./config/prometheus/prometheus01.yml) and [./config/prometheus/prometheus02.yml](./config/prometheus/prometheus02.yml) config files;
 - Run `docker-compose restart prometheus01 prometheus02`;
 - Once they're reloaded, head to the [Explore](http://localhost:3000/explore) tab and switch to the `M3 Query` data source to run PromQL queries.
 
