@@ -19,9 +19,6 @@ services:
       - "0.0.0.0:9002:9002"
       - "0.0.0.0:9003:9003"
       - "0.0.0.0:9004:9004"
-    privileged: true
-    cap_add:
-      - ALL
   m3db_data01:
     networks:
       - backend
@@ -31,9 +28,6 @@ services:
       - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
     environment:
       - M3DB_HOST_ID=m3db_data01
-    privileged: true
-    cap_add:
-        - ALL
     depends_on: 
       - "m3db_seed"
   m3db_data02:
@@ -45,9 +39,6 @@ services:
       - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
     environment:
       - M3DB_HOST_ID=m3db_data02
-    privileged: true
-    cap_add:
-      - ALL
     depends_on: 
       - "m3db_seed"
   prometheus01:

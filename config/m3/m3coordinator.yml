@@ -28,10 +28,6 @@ clusters:
               - zone: embedded
                 endpoints:
                   - m3db_seed:2379
-      # Uncomment for proto use
-      # --
-      # proto:
-      #   schemaFilePath: /etc/m3coordinator/schema.proto
 
 carbon:
   ingester:
