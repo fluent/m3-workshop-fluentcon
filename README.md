@@ -32,6 +32,20 @@ At the startup Grafana will be configured to use 3 different data sources pointi
 
 ![Architecture diagram](./m3-workshop-schema.png)
 
+**Containers list**
+
+| Container   | Endpoints 	| Notes		|
+| ----------- | ----------- |-----------|
+| prometheus01| [http://localhost:9090](http://localhost:9090)||		
+| prometheus02| [http://localhost:9091](http://localhost:9091)||
+| m3db_seed	  | 0.0.0.0:2379; 
+				0.0.0.0:9090  |			
+| m3db_data01 | 0.0.0.0:2379   |			
+| m3db_data02 | 0.0.0.0:2379   |			
+| m3coordinator01| 0.0.0.0:7201|	X	
+| m3query01 	| 0.0.0.0:7221  |		X	
+
+
 ### Starting the stack
 
 Run the following command in this directory:
