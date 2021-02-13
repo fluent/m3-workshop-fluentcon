@@ -24,6 +24,8 @@ workshop we'll see how querying the data on separate Prometheus instances we're 
 
 M3 Coordinator instance is taking all read and write requests and then distributing them to the cluster of M3DB nodes. It also implements Prometheus Remote Read and Write HTTP endpoints, which we're going to use by configuring Prometheus instances to use it during the workshop.
 
+M3 Query instance is used to allow querying data in the M3DB cluster via Grafana.
+
 At the startup Grafana will be configured to use 3 different data sources pointing to:
 
 - [Prometheus instance 1](http://localhost:9090)
@@ -44,6 +46,7 @@ At the startup Grafana will be configured to use 3 different data sources pointi
 | m3db_data02 | localhost:909[0-2]  | This M3DB node runs in cluster mode only |	
 | m3coordinator01| 0.0.0.0:7201 | Exposes Prometheus Remote Read and Write API on TCP 7201 port |
 | m3query01 	| 0.0.0.0:7221  | Exposes Prometheus Remote Read API on TCP 7221 port, used as a Grafana data source to query data in the M3DB cluster|
+| provisioner | N/A | Prepares M3DB cluster on startup (creates M3DB namespace, placements)|
 
 
 ### Starting the stack
