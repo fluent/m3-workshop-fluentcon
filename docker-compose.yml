@@ -124,6 +124,7 @@ services:
     image: grafana/grafana:latest
     volumes:
       - "./config/grafana/provisioning/:/etc/grafana/provisioning/"
+      - "./config/grafana/dashboards/:/var/lib/grafana/dashboards/"
     environment:
       - GF_LOG_LEVEL=error
     depends_on:
