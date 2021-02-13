@@ -24,6 +24,8 @@ workshop we'll see how querying the data on separate Prometheus instances we're 
 
 M3 Coordinator instance is taking all read and write requests and then distributing them to the cluster of M3DB nodes. It also implements Prometheus Remote Read and Write HTTP endpoints, which we're going to use by configuring Prometheus instances to use it during the workshop.
 
+M3 Query instance is used to allow querying data in the M3DB cluster via Grafana.
+
 At the startup Grafana will be configured to use 3 different data sources pointing to:
 
 - [Prometheus instance 1](http://localhost:9090)
@@ -31,6 +33,21 @@ At the startup Grafana will be configured to use 3 different data sources pointi
 - [M3 Query endpoint](http://localhost:7221)
 
 ![Architecture diagram](./m3-workshop-schema.png)
+
+**List of container instances**
+
+| Container   | Endpoints 	| Notes		|
+| ----------- | ----------- |-----------|
+| prometheus01| [http://localhost:9090](http://localhost:9090)|The first Prometheus instance, scrapes itself and all M3 services, except M3 Query|
+| prometheus02| [http://localhost:9091](http://localhost:9091)|The second Prometheus instance, scrapes all M3 services in the stack|
+| grafana| [http://localhost:3030](http://localhost:3030)||
+| m3db_seed	  | localhost:2379; localhost:909[0-2]| M3DB instance, running built-in etcd service (2379 TCP port). Runs in both single-node and cluster modes|
+| m3db_data01 | localhost:909[0-2]  | This M3DB node runs in cluster mode only |
+| m3db_data02 | localhost:909[0-2]  | This M3DB node runs in cluster mode only |
+| m3coordinator01| 0.0.0.0:7201 | Exposes Prometheus Remote Read and Write API on TCP 7201 port |
+| m3query01 	| 0.0.0.0:7221  | Exposes Prometheus Remote Read API on TCP 7221 port, used as a Grafana data source to query data in the M3DB cluster|
+| provisioner | N/A | Prepares M3DB cluster on startup (creates M3DB namespace, placements)|
+
 
 ### Starting the stack
 
@@ -71,15 +88,11 @@ Press `Ctrl+C` to interrupt the already running `docker-compose up` process, or 
 
 ```$:~ docker-compose down```
 
-**NOTE:** it leave container disks intact. If you want to get rid of the data as well, run the following command:
+**NOTE:** it leaves container disks intact. If you want to get rid of the data as well, run the following command:
 
 ```$:~ docker-compose down -v```
-
-Stopping down the single M3DB node stack is done by running the following command:
-
-```$:~ docker-compose -f single-node.yml down -v```
 
 
 ## Notes
 
-It's recommended to run `Docker` engine w 8 GiB of memory allocated to it to ensure smooth operation of the stack during the workshop. In case you don't have enough memory, a single node M3DB stack can be used (single-node.yml Docker-compose file).
+It's recommended to run `Docker` engine w/ 8 GiB of memory allocated to it to ensure smooth operation of the stack during the workshop. In case you don't have enough memory, a single node M3DB stack can be used (single-node.yml Docker-compose file) - 3 GiB of memory should be enough to run this stack.
