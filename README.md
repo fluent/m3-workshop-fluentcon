@@ -32,18 +32,17 @@ At the startup Grafana will be configured to use 3 different data sources pointi
 
 ![Architecture diagram](./m3-workshop-schema.png)
 
-**Containers list**
+**List of container instances**
 
 | Container   | Endpoints 	| Notes		|
 | ----------- | ----------- |-----------|
-| prometheus01| [http://localhost:9090](http://localhost:9090)||		
-| prometheus02| [http://localhost:9091](http://localhost:9091)||
-| m3db_seed	  | 0.0.0.0:2379; 
-				0.0.0.0:9090  |			
-| m3db_data01 | 0.0.0.0:2379   |			
-| m3db_data02 | 0.0.0.0:2379   |			
-| m3coordinator01| 0.0.0.0:7201|	X	
-| m3query01 	| 0.0.0.0:7221  |		X	
+| prometheus01| [http://localhost:9090](http://localhost:9090)|First Prometheus instance, scrapes itself and all M3 services, except M3 Query|		
+| prometheus02| [http://localhost:9091](http://localhost:9091)|Second Prometheus instance, scrapes all M3 services in the stack|
+| m3db_seed	  | localhost:2379; localhost:909[0-2]|  |	
+| m3db_data01 | localhost:909[0-2]  |   |		
+| m3db_data02 | localhost:909[0-2]  |	|		
+| m3coordinator01| 0.0.0.0:7201 |		|	
+| m3query01 	| 0.0.0.0:7221  |		|	
 
 
 ### Starting the stack
