@@ -48,8 +48,9 @@ At the startup Grafana will be configured to use 3 different data sources pointi
 | m3query01 	| 0.0.0.0:7221  | Exposes Prometheus Remote Read API on TCP 7221 port, used as a Grafana data source to query data in the M3DB cluster|
 | provisioner | N/A | Prepares M3DB cluster on startup (creates M3DB namespace, placements)|
 
+## Instructions for the workshop
 
-### Starting the stack
+### Step 1: Starting the stack
 
 Run the following command in this directory:
 
@@ -74,7 +75,7 @@ To run the M3 stack consisting of a single M3DB node, run the following command 
 
 Once the stack is up and running, login into the [Grafana](http://localhost:3030) using `admin:admin` credentials and then head to the [Explore](http://localhost:3000/explore) tab.
 
-### Sending Prometheus metrics to the M3DB cluster
+### Step 2 - Sending Prometheus metrics to the M3DB cluster
 
 To start sending metrics scraped by Prometheus instances to the M3DB cluster, we need to enable remote write functionality:
 
@@ -82,7 +83,16 @@ To start sending metrics scraped by Prometheus instances to the M3DB cluster, we
 - Run `docker-compose restart prometheus01 prometheus02`;
 - Once they're reloaded, head to the [Explore](http://localhost:3000/explore) tab and switch to the `M3 Query` data source to run PromQL queries.
 
-### Spinning down the stack
+### Step 3 - Query for Prometheus metrics
+
+
+### Step 4 - Build a Grafana dashboard 
+
+
+### Step 5 - Spin down one of the M3DB nodes (if running 3 node cluster) and query Prometheus metrics 
+
+
+### Step 6 - Spinning down the stack
 
 Press `Ctrl+C` to interrupt the already running `docker-compose up` process, or run the following command:
 
@@ -96,3 +106,4 @@ Press `Ctrl+C` to interrupt the already running `docker-compose up` process, or 
 ## Notes
 
 It's recommended to run `Docker` engine w/ 8 GiB of memory allocated to it to ensure smooth operation of the stack during the workshop. In case you don't have enough memory, a single node M3DB stack can be used (single-node.yml Docker-compose file) - 3 GiB of memory should be enough to run this stack.
+
