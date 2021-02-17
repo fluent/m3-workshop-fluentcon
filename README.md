@@ -108,6 +108,10 @@ To start sending metrics scraped by the two Prometheus instances to the M3DB clu
 
 - Once this is down, return to your `M3Query` data source in Grafana, and run a query command (e.g. `up{}`). You will see that the single node has been dropped, but that all remaining instances are still being successfully queried. 
 
+**Note:** If you want to re-start `m3db_data01`, run the following command:
+
+```$:~ docker-compose start m3db_data01```
+
 ### Step 7 - Spinning down the stack
 
 Press `Ctrl+C` to interrupt the already running `docker-compose up` process, or run the following command:
