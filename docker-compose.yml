@@ -3,7 +3,7 @@ services:
   m3db_seed:
     networks:
       - backend
-    image: quay.io/m3db/m3dbnode:latest
+    image: quay.io/m3db/m3dbnode:v1.1.0
     volumes:
       - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
       - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
@@ -22,7 +22,7 @@ services:
   m3db_data01:
     networks:
       - backend
-    image: quay.io/m3db/m3dbnode:latest
+    image: quay.io/m3db/m3dbnode:v1.1.0
     volumes:
       - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
       - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
@@ -33,7 +33,7 @@ services:
   m3db_data02:
     networks:
       - backend
-    image: quay.io/m3db/m3dbnode:latest
+    image: quay.io/m3db/m3dbnode:v1.1.0
     volumes:
       - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
       - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
@@ -48,7 +48,7 @@ services:
       - "0.0.0.0:9090:9090"
     networks:
       - backend
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.25.0
     volumes:
       - "./config/prometheus/prometheus01.yml:/etc/prometheus/prometheus.yml"
     depends_on:
@@ -60,7 +60,7 @@ services:
       - "0.0.0.0:9091:9090"
     networks:
       - backend
-    image: prom/prometheus:latest
+    image: prom/prometheus:v2.25.0
     volumes:
       - "./config/prometheus/prometheus02.yml:/etc/prometheus/prometheus.yml"
     depends_on:
@@ -78,7 +78,7 @@ services:
       - "0.0.0.0:7507:7507"
     networks:
       - backend
-    image: quay.io/m3db/m3coordinator:latest
+    image: quay.io/m3db/m3coordinator:v1.1.0
     volumes:
       - "./config/m3/m3coordinator.yml:/etc/m3coordinator/m3coordinator.yml"
       - "./config/m3/schema.proto:/etc/m3coordinator/schema.proto"
@@ -109,7 +109,7 @@ services:
       - "0.0.0.0:7527:7507"
     networks:
       - backend
-    image: quay.io/m3db/m3query:latest
+    image: quay.io/m3db/m3query:v1.1.0
     volumes:
       - "./config/m3/m3query.yml:/etc/m3query/m3query.yml"
     depends_on:
@@ -121,7 +121,7 @@ services:
       - "0.0.0.0:3000:3000"
     networks:
       - backend
-    image: grafana/grafana:latest
+    image: grafana/grafana:7.4.3
     volumes:
       - "./config/grafana/provisioning/:/etc/grafana/provisioning/"
       - "./config/grafana/dashboards/:/var/lib/grafana/dashboards/"
