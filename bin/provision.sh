@@ -5,10 +5,8 @@ set -o pipefail
 
 
 # Variables
-COORDINATOR_API_HOST=${COORDINATOR_API_HOST:-"m3coordinator01:7201"}
+COORDINATOR_API_HOST=${COORDINATOR_API_HOST:-"m3coordinator:7201"}
 M3DB_SEED_HOST=${M3DB_SEED_HOST:-"m3db_seed:9002"}
-
-
 
 
 # Retries a command a configurable number of times with backoff.

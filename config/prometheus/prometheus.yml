@@ -8,28 +8,19 @@ scrape_configs:
   - job_name: 'prometheus'
     static_configs:
       - targets: 
-        - prometheus02:9090
+        - prometheus:9090
 
-  - job_name: 'm3coordinator'
+  - job_name: 'fluentbit'
     static_configs:
       - targets:
-          - m3coordinator01:7210
-
-  - job_name: 'm3query'
-    static_configs:
-      - targets:
-          - m3query01:7211
-
-  - job_name: 'm3db'
-    static_configs:
-      - targets: ['m3db_seed:9004', 'm3db_data01:9004', 'm3db_data02:9004']
+          - fluentbit:2021
 
 #remote_read:
-#  - url: http://m3coordinator01:7201/api/v1/prom/remote/read
+#  - url: http://m3coordinator:7201/api/v1/prom/remote/read
 #    read_recent: true
 
 #remote_write:
-#  - url: http://m3coordinator01:7201/api/v1/prom/remote/write
+#  - url: http://m3coordinator:7201/api/v1/prom/remote/write
 #    remote_timeout: 30s
 #    queue_config:
 #      capacity: 10000
