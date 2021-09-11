@@ -30,7 +30,7 @@ At the start, Grafana will be configured with 2 different data sources - Prometh
 - [Prometheus](http://localhost:9090)
 - [M3 Query endpoint](http://localhost:7221)
 
-![Architecture diagram](./fluentconf-workshop-schema.png)
+![Architecture diagram](./fluentcon-workshop-schema.png)
 
 **List of container instances**
 
