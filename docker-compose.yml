@@ -3,7 +3,7 @@ services:
   m3db_seed:
     networks:
       - backend
-    image: quay.io/m3db/m3dbnode:v1.1.0
+    image: quay.io/m3db/m3dbnode:latest
     volumes:
       - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
       - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
@@ -19,53 +19,10 @@ services:
       - "0.0.0.0:9002:9002"
       - "0.0.0.0:9003:9003"
       - "0.0.0.0:9004:9004"
-  m3db_data01:
-    networks:
-      - backend
-    image: quay.io/m3db/m3dbnode:v1.1.0
-    volumes:
-      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
-      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
-    environment:
-      - M3DB_HOST_ID=m3db_data01
-    depends_on: 
-      - "m3db_seed"
-  m3db_data02:
-    networks:
-      - backend
-    image: quay.io/m3db/m3dbnode:v1.1.0
-    volumes:
-      - "./config/m3/m3dbnode.yml:/etc/m3dbnode/m3dbnode.yml"
-      - "./config/m3/schema.proto:/etc/m3dbnode/schema.proto"
-    environment:
-      - M3DB_HOST_ID=m3db_data02
-    depends_on: 
-      - "m3db_seed"
-  prometheus01:
-    expose:
-      - "9090"
-    ports:
-      - "0.0.0.0:9090:9090"
-    networks:
-      - backend
-    image: prom/prometheus:v2.25.0
-    volumes:
-      - "./config/prometheus/prometheus01.yml:/etc/prometheus/prometheus.yml"
-    depends_on:
-      - "m3query01"
-  prometheus02:
-    expose:
-      - "9091"
-    ports:
-      - "0.0.0.0:9091:9090"
-    networks:
-      - backend
-    image: prom/prometheus:v2.25.0
-    volumes:
-      - "./config/prometheus/prometheus02.yml:/etc/prometheus/prometheus.yml"
-    depends_on:
-      - "m3query01"
-  m3coordinator01:
+    privileged: true
+    cap_add:
+      - ALL
+  m3coordinator:
     expose:
       - "7201"
       - "7203"
@@ -78,25 +35,13 @@ services:
       - "0.0.0.0:7507:7507"
     networks:
       - backend
-    image: quay.io/m3db/m3coordinator:v1.1.0
+    image: quay.io/m3db/m3coordinator:latest
     volumes:
       - "./config/m3/m3coordinator.yml:/etc/m3coordinator/m3coordinator.yml"
       - "./config/m3/schema.proto:/etc/m3coordinator/schema.proto"
     depends_on:
       - "m3db_seed"
-  provisioner:
-    environment:
-      - USE_MULTI_DB_NODES=true
-      - USE_MULTI_PROMETHEUS_NODES=true
-    networks:
-      - backend
-    image: dwdraju/alpine-curl-jq:latest
-    depends_on:
-      - "m3coordinator01"
-    volumes:
-      - "./bin/provision.sh:/tmp/provision.sh"
-    entrypoint: /tmp/provision.sh
-  m3query01:
+  m3query:
     expose:
       - "7201"
       - "7203"
@@ -109,11 +54,35 @@ services:
       - "0.0.0.0:7527:7507"
     networks:
       - backend
-    image: quay.io/m3db/m3query:v1.1.0
+    image: quay.io/m3db/m3query:latest
     volumes:
       - "./config/m3/m3query.yml:/etc/m3query/m3query.yml"
     depends_on:
       - "provisioner"
+  prometheus:
+    expose:
+      - "9090"
+    ports:
+      - "0.0.0.0:9090:9090"
+    networks:
+      - backend
+    image: prom/prometheus:latest
+    volumes:
+      - "./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+    depends_on:
+      - "provisioner"
+  provisioner:
+    environment:
+      - USE_MULTI_DB_NODES=false
+      - USE_MULTI_PROMETHEUS_NODES=false
+    networks:
+      - backend
+    image: dwdraju/alpine-curl-jq:latest
+    depends_on:
+      - "m3db_seed"
+    volumes:
+      - "./bin/provision.sh:/tmp/provision.sh"
+    entrypoint: /tmp/provision.sh
   grafana:
     expose:
       - "3000"
@@ -121,13 +90,25 @@ services:
       - "0.0.0.0:3000:3000"
     networks:
       - backend
-    image: grafana/grafana:7.4.3
+    image: grafana/grafana:latest
     volumes:
       - "./config/grafana/provisioning/:/etc/grafana/provisioning/"
       - "./config/grafana/dashboards/:/var/lib/grafana/dashboards/"
     environment:
       - GF_LOG_LEVEL=error
     depends_on:
-      - "m3query01"
+      - "provisioner"
+  fluentbit:
+    expose:
+      - "2021"
+    ports:
+      - "0.0.0.0:2021:2021"
+    networks:
+      - backend
+    image: fluent/fluent-bit:1.8
+    volumes:
+      - "./config/fluentbit/:/fluent-bit/etc/"
+    depends_on:
+      - "provisioner"
 networks:
   backend:
