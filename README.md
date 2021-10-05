@@ -48,7 +48,7 @@ At the start, Grafana will be configured with 2 different data sources - Prometh
 
 ### Step 1: Go to the M3 Workshop repo and clone the repo onto your local machine: 
 
-Link to repo: https://github.com/m3dbx/m3-workshop
+Link to repo: https://github.com/fluent/m3-workshop-fluentcon
 
 ### Step 2: Start up the stack via Docker-Compose
 
