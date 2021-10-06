@@ -1,4 +1,4 @@
-# FluentCon M3 Workshop environment
+# FluentCon M3 + FluentBit Workshop 
 
 ## About
 
