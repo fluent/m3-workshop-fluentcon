@@ -37,7 +37,7 @@ At the start, Grafana will be configured with 2 different data sources - Prometh
 | Container   | Endpoints 	| Notes		|
 | ----------- | ----------- |-----------|
 | prometheus| [http://localhost:9090](http://localhost:9090)|The first Prometheus instance, scrapes itself and all M3 services, except M3 Query|
-| grafana| [http://localhost:3030](http://localhost:3030)|Grafana instance w/ multiple datasources configured|
+| grafana| [http://localhost:3000](http://localhost:3000)|Grafana instance w/ multiple datasources configured|
 | m3db_seed	  | localhost:2379; localhost:909[0-2]| M3DB instance, running built-in etcd service (2379 TCP port). |
 | m3coordinator| 0.0.0.0:7201 | Exposes Prometheus Remote Read and Write API on TCP 7201 port |
 | m3query | 0.0.0.0:7221  | Exposes Prometheus Remote Read API on TCP 7221 port, used as a Grafana data source to query data in the M3DB cluster|
@@ -71,7 +71,7 @@ Logs of the `provisioner` process can be seen either by following the output of 
 
 ### Step 3: Open up Grafana 
 
-Once the stack is up and running, login into the [Grafana](http://localhost:3030) using `admin:admin` credentials and then head to the [Explore](http://localhost:3000/explore) tab.
+Once the stack is up and running, login into the [Grafana](http://localhost:3000) using `admin:admin` credentials and then head to the [Explore](http://localhost:3000/explore) tab.
 
 Grafana: http://localhost:3030
 
