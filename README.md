@@ -73,7 +73,7 @@ Logs of the `provisioner` process can be seen either by following the output of 
 
 Once the stack is up and running, login into the [Grafana](http://localhost:3000) using `admin:admin` credentials and then head to the [Explore](http://localhost:3000/explore) tab.
 
-Grafana: http://localhost:3030
+Grafana: http://localhost:3000
 
 **Note:** Press "skip screen" in Grafana when prompting you to set a password. 
 
