@@ -105,7 +105,7 @@ services:
       - "0.0.0.0:2021:2021"
     networks:
       - backend
-    image: fluent/fluent-bit:1.8
+    image: fluent/fluent-bit:1.8.4
     volumes:
       - "./config/fluentbit/:/fluent-bit/etc/"
     depends_on:
